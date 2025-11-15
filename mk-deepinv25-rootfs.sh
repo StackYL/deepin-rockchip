@@ -38,7 +38,7 @@ systemctl enable lightdm
 \${APT_INSTALL} /packages/*.deb
 \${APT_INSTALL} /packages/rga2/*.deb
 \${APT_INSTALL} /packages/mpp/*.deb
-\${APT_INSTALL} /packages/gst-mpp/*.deb
+\${APT_INSTALL} /packages/gst-rkmpp/*.deb
 
 HOST=darkmoon
 
