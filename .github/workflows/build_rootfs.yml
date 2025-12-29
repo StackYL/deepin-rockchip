@@ -1,0 +1,82 @@
+name: Build Deepin RootFS
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+
+env:
+  TZ: Etc/UTC
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    if: ${{ github.event.repository.owner.id }} == ${{ github.event.sender.id }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Initialization environment
+        id: init
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          docker rmi -f $(docker images -q) 2>/dev/null || true
+          [[ -n "${AGENT_TOOLSDIRECTORY}" ]] && sudo rm -rf "${AGENT_TOOLSDIRECTORY}"
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android 2>/dev/null
+          sudo swapoff -a
+          sudo rm -f /swapfile /mnt/swapfile
+          sudo -E apt-get -y update
+          sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
+          sudo -E apt-get -y install $(curl -fsSL https://ophub.org/ubuntu2404-build-armbian-depends)
+          sudo -E systemctl daemon-reload
+          #sudo -E apt-get -y full-upgrade
+          sudo -E apt-get -y autoremove --purge
+          sudo -E apt-get clean
+          sudo sed -i '/NVM_DIR/d;/skel/d' /root/{.bashrc,.profile}
+          sudo rm -rf ~/{.cargo,.dotnet,.rustup}
+          sudo -E timedatectl set-timezone "${TZ:-Etc/UTC}"
+          sudo -E ntpdate ntp.ubuntu.com 0.pool.ntp.org || true
+          sudo -E timedatectl set-ntp true
+          date -u
+          timedatectl status || true
+          echo "status=success" >> ${GITHUB_OUTPUT}
+
+      - name: Create simulated physical disk
+        id: disk
+        run: |
+          mnt_size=$(expr $(df -h /mnt | tail -1 | awk '{print $4}' | sed 's/[[:alpha:]]//g' | sed 's/\..*//') - 1)
+          root_size=$(expr $(df -h / | tail -1 | awk '{print $4}' | sed 's/[[:alpha:]]//g' | sed 's/\..*//') - 4)
+          sudo truncate -s "${mnt_size}"G /mnt/mnt.img
+          sudo truncate -s "${root_size}"G /root.img
+          sudo losetup /dev/loop6 /mnt/mnt.img
+          sudo losetup /dev/loop7 /root.img
+          sudo pvcreate /dev/loop6
+          sudo pvcreate /dev/loop7
+          sudo vgcreate github /dev/loop6 /dev/loop7
+          sudo lvcreate -n runner -l 100%FREE github
+          sudo mkfs.xfs -f -i sparse=0 -b size=4096 /dev/github/runner
+          sudo mkdir -p /builder
+          sudo mount /dev/github/runner /builder
+          sudo chown -R runner:runner /builder
+          df -Th
+          echo "status=success" >> ${GITHUB_OUTPUT}
+
+      - name: Build Deepin RootFS
+        id: BuildRootFs
+        run: |
+          sudo bash mk-base-rootfs.sh
+          sudo bash mk-deepinv25-rootfs.sh
+
+      # - name: Upload RootFS to Release
+      #   uses: ncipollo/release-action@main
+      #   if: ${{ env.PACKAGED_STATUS }} == 'success' && !cancelled()
+      #   with:
+      #     tag: RootFS
+      #     artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
+      #     allowUpdates: true
+      #     removeArtifacts: false
+      #     replacesArtifacts: true
+      #     makeLatest: false
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     body: 
