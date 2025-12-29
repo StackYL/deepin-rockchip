@@ -16,6 +16,10 @@ sudo mount -t sysfs /sys $TARGET_ROOTFS_DIR/sys
 sudo mount -o bind /dev $TARGET_ROOTFS_DIR/dev
 sudo mount -o bind /dev/pts $TARGET_ROOTFS_DIR/dev/pts
 
+sudo mount -t tmpfs -o "size=99%" tmpfs "$TARGET_ROOTFS_DIR/tmp"
+sudo mount -t tmpfs -o "size=99%" tmpfs "$TARGET_ROOTFS_DIR/var/tmp"
+
+
 cat <<EOF | sudo chroot $TARGET_ROOTFS_DIR/
 
 export DEBIAN_FRONTEND=noninteractive
@@ -73,8 +77,13 @@ history -c
 
 EOF
 
+ 
+sudo umount $TARGET_ROOTFS_DIR/tmp
+sudo umount $TARGET_ROOTFS_DIR/var/tmp
 sudo umount $TARGET_ROOTFS_DIR/proc
 sudo umount $TARGET_ROOTFS_DIR/sys
 sudo umount $TARGET_ROOTFS_DIR/dev/pts
 sudo umount $TARGET_ROOTFS_DIR/dev
+
+sudo tar -zcf $dist_name-$dist_version-rootfs-arm64.tar.gz -C $TARGET_ROOTFS_DIR .
 
