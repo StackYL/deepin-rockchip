@@ -65,6 +65,8 @@ jobs:
       - name: Build Deepin RootFS
         id: BuildRootFs
         run: |
+          sudo chmod +x *.sh
+          sudo chmod +x config/hooks.chroot/second-stage
           sudo bash mk-base-rootfs.sh
           sudo bash mk-deepinv25-rootfs.sh
 
@@ -73,7 +75,7 @@ jobs:
       #   if: ${{ env.PACKAGED_STATUS }} == 'success' && !cancelled()
       #   with:
       #     tag: RootFS
-      #     artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
+      #     artifacts: *.tar.gz
       #     allowUpdates: true
       #     removeArtifacts: false
       #     replacesArtifacts: true
