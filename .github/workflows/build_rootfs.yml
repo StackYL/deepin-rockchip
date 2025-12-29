@@ -70,15 +70,15 @@ jobs:
           sudo bash mk-base-rootfs.sh
           sudo bash mk-deepinv25-rootfs.sh
 
-      # - name: Upload RootFS to Release
-      #   uses: ncipollo/release-action@main
-      #   if: ${{ env.PACKAGED_STATUS }} == 'success' && !cancelled()
-      #   with:
-      #     tag: RootFS
-      #     artifacts: *.tar.gz
-      #     allowUpdates: true
-      #     removeArtifacts: false
-      #     replacesArtifacts: true
-      #     makeLatest: false
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     body: 
+      - name: Upload RootFS to Release
+        uses: ncipollo/release-action@main
+        if: ${{ env.PACKAGED_STATUS }} == 'success' && !cancelled()
+        with:
+          tag: RootFS
+          artifacts: '*.tar.gz'
+          allowUpdates: true
+          removeArtifacts: false
+          replacesArtifacts: true
+          makeLatest: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: RootFS
