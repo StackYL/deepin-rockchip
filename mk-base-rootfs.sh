@@ -40,7 +40,7 @@ sudo mmdebstrap  \
 # 生成压缩包
 
 #rm -rf $dist_name-$dist_version-rootfs-$arch.tar.gz
-sudo tar -zcf $dist_name-$dist_version-rootfs-$arch.tar.gz -C $ROOTFS .
+sudo tar -zcf $dist_name-$dist_version-rootfs-arm64.tar.gz -C $ROOTFS .
 # 删除临时文件夹
 #sudo rm -rf  $ROOTFS
 
