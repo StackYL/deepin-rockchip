@@ -6,7 +6,7 @@ dist_name="deepin"
 TARGET_ROOTFS_DIR=./rootfs/$dist_name-$dist_version
 
 sudo cp -b /etc/resolv.conf $TARGET_ROOTFS_DIR/etc/resolv.conf
-sudo cp -b /usr/bin/qemu-aarch64-static $TARGET_ROOTFS_DIR/usr/bin/
+#sudo cp -b /usr/bin/qemu-aarch64-static $TARGET_ROOTFS_DIR/usr/bin/
 sudo cp -rpf ./packages $TARGET_ROOTFS_DIR/
 
 echo -e "\033[47;36m Change root.................... \033[0m"
@@ -14,7 +14,6 @@ echo -e "\033[47;36m Change root.................... \033[0m"
 sudo mount -t proc /proc $TARGET_ROOTFS_DIR/proc
 sudo mount -t sysfs /sys $TARGET_ROOTFS_DIR/sys
 sudo mount -o bind /dev $TARGET_ROOTFS_DIR/dev
-sudo mount -o bind /dev/pts $TARGET_ROOTFS_DIR/dev/pts
 
 sudo mount -t tmpfs -o "size=99%" tmpfs "$TARGET_ROOTFS_DIR/tmp"
 sudo mount -t tmpfs -o "size=99%" tmpfs "$TARGET_ROOTFS_DIR/var/tmp"
@@ -82,8 +81,8 @@ sudo umount $TARGET_ROOTFS_DIR/tmp
 sudo umount $TARGET_ROOTFS_DIR/var/tmp
 sudo umount $TARGET_ROOTFS_DIR/proc
 sudo umount $TARGET_ROOTFS_DIR/sys
-sudo umount $TARGET_ROOTFS_DIR/dev/pts
 sudo umount $TARGET_ROOTFS_DIR/dev
 
 sudo tar -zcf $dist_name-$dist_version-rootfs-arm64.tar.gz -C $TARGET_ROOTFS_DIR .
+sudo split -b 1900M  $dist_name-$dist_version-rootfs-arm64.tar.gz -d -a 2 rootfs_
 
