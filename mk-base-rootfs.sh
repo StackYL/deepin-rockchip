@@ -22,9 +22,9 @@ ROOTFS=$OUT_DIR/$dist_name-$dist_version
 mkdir -p $OUT_DIR
 mkdir -p $ROOTFS
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 425956BB3E31DF51
-sudo apt update -y && sudo apt install -y curl git mmdebstrap qemu-user-static systemd-container
+sudo apt update -y && sudo apt install -y curl git mmdebstrap systemd-container
 # 开启异架构支持
-sudo systemctl start systemd-binfmt
+# sudo systemctl start systemd-binfmt
 
 sudo mmdebstrap  \
 	--hook-dir=/usr/share/mmdebstrap/hooks/merged-usr \
